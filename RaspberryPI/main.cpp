@@ -5,8 +5,10 @@
 #include <fstream>
 #include <time.h>
 #include <string>
-#include "./../lib/pi2c.h"
-#include "./../lib/matplotlibcpp.h"
+#include <vector>
+#include <cstring>
+#include "pi2c.h"
+//#include "./../lib/matplotlibcpp.h"
 
 
 
@@ -18,17 +20,18 @@ float getAcc(time_t time);
 
 using namespace std;
 
-namespace plt = matplotlibcpp;
+//namespace plt = matplotlibcpp;
 
 int main(int argc, char *argv[])
 {
+	
 	int address = 0x08;
 	long positionAndTime[2] = {0}; 
 	char *data = (char*)positionAndTime;
 	int length = sizeof(long)*2;
 	float c0 = 0.0, acc = 0.0, oldAcc = 0.0, pos = 0.0, pos2 = 0.0, vel = 0.0, encoderTime = 0.0, encoderPosition = 0.0;
 	float omg = M_PI/20, wantPos = 0.0, wantPosPre = 0.0, currPos = 0.0, prePos = 0.0, stpPS = 0.0, timestep = 0.1, dtsq = timestep*timestep;
-	float error = 0, cumError = 0, rateError = 0, lastError = 0, kp = 1.0/(dtsq), kd = 1.0/(dtsq), kc = 1.0/(dtsq);
+	float error = 0, cumError = 0, rateError = 0, lastError = 0, kp = 5.0/(dtsq), kd = 1.0/(dtsq), kc = 1.0/(dtsq);
 	clock_t start, end;
 	start = clock();
 	float t = 0.0, dt = 0.0, preT = 0.0, nextT = 0.0;
@@ -72,7 +75,7 @@ int main(int argc, char *argv[])
 		if(pi2c.i2cRead(data,length)<0){
 			cout << " error reading from arduino" << endl;
 			cout << "time was: " << data[1]<< "pos was: " << data[0]<< endl;
-			return -1;
+			//return -1;
 		};
 		currPos = (float) positionAndTime[0]*0.6; //from encoder to stepper steps =  (300.0/500.0);
 		
@@ -116,7 +119,6 @@ int main(int argc, char *argv[])
         const char* myLegendEncoder = "Encoder";
 		const char* myLegendWanted = "Wanted";
 
-	//	plt::myRealtimePloter(timeVec, current, wanted, myLegendEncoder,myLegendWanted, myTitle);
 
 		lastError = error;
 		wantPosPre = wantPos;
@@ -128,20 +130,6 @@ int main(int argc, char *argv[])
 			runFlag = false;
 		}
 	}	
-
-	plt::clf();	
-	plt::named_plot("Encoder",timeVec,current);
-	plt::named_plot("Wanted",timeVec,wanted);
-    	// Set x-axis to interval [0,1000000]
-	plt::xlim(timeVec.front(), timeVec.back());
-	
-	// Add graph title
-	string title = "Test with kp =" + to_string(kp) + ", kd = "+to_string(kd) + ", kc = " + to_string(kc);
-	plt::title(title);
-	// Enable legend.
-	plt::legend();
-   	
-	plt::show();
 	
 	return 0;
 }
