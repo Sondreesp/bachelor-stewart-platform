@@ -20,16 +20,12 @@ int main(int argc, char *argv[]){
 
     // I2C Setup for the multiple nodes
     int n0_address = 0x08;
-    long n0_pos_time[2] = {0};
-    char *n0_data = (char*)n0_pos_time;
-    
-    int n1_address = 0x10;
-    long n1_pos_time[2] = {0};
-    char *n1_data = (char*)n1_pos_time;
-    
-    int n2_address = 0x12;
-    long n2_pos_time[2] = {0};
-    char *n2_data = (char*)n2_pos_time;
+    int n1_address = 0x09;
+    int n2_address = 0x10;
+    int n3_address = 0x11;
+    int n4_address = 0x12;
+    int n5_address = 0x13;
+   
     
     
     
@@ -67,6 +63,9 @@ int main(int argc, char *argv[]){
     Pi2c node_0(n0_address);
     Pi2c node_1(n1_address);
     Pi2c node_2(n2_address);
+    Pi2c node_3(n3_address);
+    Pi2c node_4(n4_address);
+    Pi2c node_5(n5_address);
 
 
 
@@ -132,7 +131,10 @@ for(int i=0;i<maxLoop;i++){
     
     node_0.i2cRead((char*)&floatsToReceive[0],length);
     node_1.i2cRead((char*)&floatsToReceive[1],length); 
-    node_2.i2cRead((char*)&floatsToReceive[2],length);  
+    node_2.i2cRead((char*)&floatsToReceive[2],length);
+    node_3.i2cRead((char*)&floatsToReceive[3],length);
+    node_4.i2cRead((char*)&floatsToReceive[4],length);
+    node_5.i2cRead((char*)&floatsToReceive[5],length);  
 
     platform.getActuatorLengths(actuatorLength);
     for(int j=0;j<6;j++){
@@ -167,9 +169,12 @@ for(int i=0;i<maxLoop;i++){
     }
     floatsToSend[6] = (float) t;
     
-    node_0.i2cWrite((char*)&floatsToSend[0],4);
-    node_1.i2cWrite((char*)&floatsToSend[1],4);
-    node_2.i2cWrite((char*)&floatsToSend[2],4);
+    node_0.i2cWrite((char*)&floatsToSend[0],length);
+    node_1.i2cWrite((char*)&floatsToSend[1],length);
+    node_2.i2cWrite((char*)&floatsToSend[2],length);
+    node_3.i2cWrite((char*)&floatsToSend[3],length);
+    node_4.i2cWrite((char*)&floatsToSend[4],length);
+    node_5.i2cWrite((char*)&floatsToSend[5],length);
     
 /* Rewrite to I2C comunication
     if(sendAccToTwin(serverSocket,floatsToSend)){
