@@ -19,16 +19,9 @@ int main(int argc, char *argv[]){
 
 
     // I2C Setup for the multiple nodes
-    int n0_address = 0x08;
-    int n1_address = 0x09;
-    int n2_address = 0x10;
-    int n3_address = 0x11;
-    int n4_address = 0x12;
-    int n5_address = 0x13;
-   
+    int i2c_slaves = [0x08, 0x09, 0x10, 0x11, 0x12, 0x13]
     
-    
-    
+    //int n0_address = 0x08;
     long positionAndTime[2] = {0}; 
     char *data = (char*)positionAndTime;
     int length = sizeof(long)*2;
@@ -60,14 +53,8 @@ int main(int argc, char *argv[]){
 // Initiate platform object
     StewartPlatform platform(timestep);	
     
-    Pi2c node_0(n0_address);
-    Pi2c node_1(n1_address);
-    Pi2c node_2(n2_address);
-    Pi2c node_3(n3_address);
-    Pi2c node_4(n4_address);
-    Pi2c node_5(n5_address);
-
-
+    //Initialize I2C master
+    Pi2c rpi(0x00);
 
 
 
@@ -129,12 +116,12 @@ for(int i=0;i<maxLoop;i++){
     
     */
     
-    node_0.i2cRead((char*)&floatsToReceive[0],length);
-    node_1.i2cRead((char*)&floatsToReceive[1],length); 
-    node_2.i2cRead((char*)&floatsToReceive[2],length);
-    node_3.i2cRead((char*)&floatsToReceive[3],length);
-    node_4.i2cRead((char*)&floatsToReceive[4],length);
-    node_5.i2cRead((char*)&floatsToReceive[5],length);  
+    //node_0.i2cRead((char*)&floatsToReceive,length); 
+
+    for (int i = 0; i < i2c_slaves.length(); i++){
+        rpi.i2cChangeSlave(i2c_slaves[i]);
+        rpi.i2cRead((char*)&floatsToReceive[i],length);
+    }
 
     platform.getActuatorLengths(actuatorLength);
     for(int j=0;j<6;j++){
@@ -169,12 +156,17 @@ for(int i=0;i<maxLoop;i++){
     }
     floatsToSend[6] = (float) t;
     
-    node_0.i2cWrite((char*)&floatsToSend[0],length);
-    node_1.i2cWrite((char*)&floatsToSend[1],length);
-    node_2.i2cWrite((char*)&floatsToSend[2],length);
-    node_3.i2cWrite((char*)&floatsToSend[3],length);
-    node_4.i2cWrite((char*)&floatsToSend[4],length);
-    node_5.i2cWrite((char*)&floatsToSend[5],length);
+    //node_0.i2cWrite((char*)&floatsToSend,4);
+    for (int i = 0; i < i2c_slaves.length(); i++){
+        rpi.i2cChangeSlave(i2c_slaves[i]);
+        rpi.i2cWrite((char*)&floatsToSend[i],length);
+    }
+
+    //Send data to each Arduino node
+    for i, address in enumerate(addresses):
+    node_i = i + 1
+    i2c_write(address, floatsToSend)
+    print(f"Data sent to node_{node_i}")
     
 /* Rewrite to I2C comunication
     if(sendAccToTwin(serverSocket,floatsToSend)){
