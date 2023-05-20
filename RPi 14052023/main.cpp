@@ -19,7 +19,10 @@ int main(int argc, char *argv[]){
 
 
     // I2C Setup for the multiple nodes
-    int n0_address = 0x08;
+    const int i2c_slaves[] = {0x08, 0x12, 0x16, 0x20, 0x24, 0x28};
+
+    
+    //int n0_address = 0x08;
     long positionAndTime[2] = {0}; 
     char *data = (char*)positionAndTime;
     int length = sizeof(long)*2;
@@ -51,9 +54,8 @@ int main(int argc, char *argv[]){
 // Initiate platform object
     StewartPlatform platform(timestep);	
     
-    Pi2c node_0(n0_address);
-
-
+    //Initialize I2C master
+    Pi2c rpi(0x00);
 
 
 
@@ -115,7 +117,12 @@ for(int i=0;i<maxLoop;i++){
     
     */
     
-    node_0.i2cRead((char*)&floatsToReceive,length); 
+    //node_0.i2cRead((char*)&floatsToReceive,length); 
+
+    for (int i = 0; i < 6; i++){
+        rpi.i2cChangeSlave(i2c_slaves[i]);
+        rpi.i2cRead((char*)&floatsToReceive + length*i,length);
+    }
 
     platform.getActuatorLengths(actuatorLength);
     for(int j=0;j<6;j++){
@@ -150,7 +157,12 @@ for(int i=0;i<maxLoop;i++){
     }
     floatsToSend[6] = (float) t;
     
-    node_0.i2cWrite((char*)&floatsToSend,4);
+    //node_0.i2cWrite((char*)&floatsToSend,4);
+    for (int i = 0; i < 6; i++){
+        rpi.i2cChangeSlave(i2c_slaves[i]);
+        rpi.i2cWrite((char*)&floatsToSend + length*i,length);
+    }
+
     
 /* Rewrite to I2C comunication
     if(sendAccToTwin(serverSocket,floatsToSend)){
