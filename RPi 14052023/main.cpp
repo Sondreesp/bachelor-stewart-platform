@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
 
 
     // I2C Setup for the multiple nodes
-    int i2c_slaves = [0x08, 0x09, 0x10, 0x11, 0x12, 0x13]
+    int i2c_slaves[] = {0x08, 0x09, 0x10, 0x11, 0x12, 0x13};
     
     //int n0_address = 0x08;
     long positionAndTime[2] = {0}; 
@@ -118,7 +118,7 @@ for(int i=0;i<maxLoop;i++){
     
     //node_0.i2cRead((char*)&floatsToReceive,length); 
 
-    for (int i = 0; i < i2c_slaves.length(); i++){
+    for (int i = 0; i < 6; i++){
         rpi.i2cChangeSlave(i2c_slaves[i]);
         rpi.i2cRead((char*)&floatsToReceive[i],length);
     }
@@ -157,16 +157,11 @@ for(int i=0;i<maxLoop;i++){
     floatsToSend[6] = (float) t;
     
     //node_0.i2cWrite((char*)&floatsToSend,4);
-    for (int i = 0; i < i2c_slaves.length(); i++){
+    for (int i = 0; i < 6; i++){
         rpi.i2cChangeSlave(i2c_slaves[i]);
         rpi.i2cWrite((char*)&floatsToSend[i],length);
     }
 
-    //Send data to each Arduino node
-    for i, address in enumerate(addresses):
-    node_i = i + 1
-    i2c_write(address, floatsToSend)
-    print(f"Data sent to node_{node_i}")
     
 /* Rewrite to I2C comunication
     if(sendAccToTwin(serverSocket,floatsToSend)){
