@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
 
 
     // I2C Setup for the multiple nodes
-    int n0_address = 0x08;
+    int n0_address = 0x16;
     long positionAndTime[2] = {0}; 
     char *data = (char*)positionAndTime;
     int length = sizeof(long)*2;
