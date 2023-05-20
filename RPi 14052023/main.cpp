@@ -120,7 +120,7 @@ for(int i=0;i<maxLoop;i++){
 
     for (int i = 0; i < 6; i++){
         rpi.i2cChangeSlave(i2c_slaves[i]);
-        rpi.i2cRead((char*)&floatsToReceive[i],length);
+        rpi.i2cRead((char*)&floatsToReceive + length*i,length);
     }
 
     platform.getActuatorLengths(actuatorLength);
@@ -159,7 +159,7 @@ for(int i=0;i<maxLoop;i++){
     //node_0.i2cWrite((char*)&floatsToSend,4);
     for (int i = 0; i < 6; i++){
         rpi.i2cChangeSlave(i2c_slaves[i]);
-        rpi.i2cWrite((char*)&floatsToSend[i],length);
+        rpi.i2cWrite((char*)&floatsToSend + length*i,length);
     }
 
     
