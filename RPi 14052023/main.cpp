@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
 
 
     // I2C Setup for the multiple nodes
-    int i2c_slaves[] = {0x08, 0x09, 0x10, 0x11, 0x12, 0x13};
+    const int i2c_slaves[] = {0x08, 0x12, 0x16, 0x20, 0x24, 0x28};
     
     //int n0_address = 0x08;
     long positionAndTime[2] = {0}; 
@@ -120,7 +120,9 @@ for(int i=0;i<maxLoop;i++){
 
     for (int i = 0; i < 6; i++){
         rpi.i2cChangeSlave(i2c_slaves[i]);
+        cout<<i2c_slaves[i]<<endl;
         rpi.i2cRead((char*)&floatsToReceive[i],length);
+        
     }
 
     platform.getActuatorLengths(actuatorLength);
@@ -159,7 +161,9 @@ for(int i=0;i<maxLoop;i++){
     //node_0.i2cWrite((char*)&floatsToSend,4);
     for (int i = 0; i < 6; i++){
         rpi.i2cChangeSlave(i2c_slaves[i]);
+        cout<<i2c_slaves[i]<<endl;
         rpi.i2cWrite((char*)&floatsToSend[i],length);
+        
     }
 
     
