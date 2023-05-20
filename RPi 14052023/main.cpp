@@ -160,7 +160,7 @@ for(int i=0;i<maxLoop;i++){
     //node_0.i2cWrite((char*)&floatsToSend,4);
     for (int i = 0; i < 6; i++){
         rpi.i2cChangeSlave(i2c_slaves[i]);
-        rpi.i2cWrite((char*)&floatsToSend + length*i,length);
+        rpi.i2cWrite((char*)&floatsToSend + length*i,4);
     }
 
     
