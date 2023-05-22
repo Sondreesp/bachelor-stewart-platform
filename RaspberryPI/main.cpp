@@ -25,7 +25,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
 	
-	int address = 0x08;
+	int address = 0x28;
 	long positionAndTime[2] = {0}; 
 	char *data = (char*)positionAndTime;
 	int length = sizeof(long)*2;

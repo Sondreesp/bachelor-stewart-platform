@@ -6,6 +6,8 @@
 #include <time.h>    
 #include <sys/time.h>
 #include "StewartPlatform.h"
+//#include "sendRecieve.h"
+//#include "circularBuffer.h"
 #include "pi2c.h"
 
 
@@ -19,7 +21,7 @@ int main(int argc, char *argv[]){
 
 
     // I2C Setup for the multiple nodes
-    int n0_address = 0x16;
+    const int i2c_slaves[] = {0x08, 0x09, 0x10, 0x11, 0x12, 0x13};
     long positionAndTime[2] = {0}; 
     char *data = (char*)positionAndTime;
     int length = sizeof(long)*2;
@@ -28,12 +30,13 @@ int main(int argc, char *argv[]){
     char ip[16], name[32];
     char buffer[BUFSIZ];
     unsigned char actuatorStatus[6][3] = {0};
-    float floatsToSend[7] = {0}, floatsToReceive[7] = {0};
+    float floatsToSend[7] = {0}, floatsToReceive[12] = {0};
     int serverSocket, portno, n, check, maxLoop = 100, numFloats=7;
 
     int numberOfElements = 1000, elementSize = 14;
     const char* fileName = "dataDT.dat";
     const char elementType[] = "double"; 
+    const char localIP[] = {"127.0.0.1"};
     const char* formatSpecifier = "Controller,   DigitalTwin\nX, Y, Z, th1, th2, th3, time, X, Y, Z, th1, th2, th3, time\n";
 
     double timestep = 0.5, dt=0, c0[6] = {0};
@@ -50,13 +53,28 @@ int main(int argc, char *argv[]){
     
 // Initiate platform object
     StewartPlatform platform(timestep);	
-    
-    Pi2c node_0(n0_address);
+
+// Initiate I2C master
+    Pi2c rpi(0x00);
 
 
+    //argvChecker(argc, argv, ip, name);
+    portno = atoi(PORT);
+    /*
+    serverSocket = connectToServer(portno,ip);
+    if(serverSocket ==-1){
+    * cout << "Error connect to server" << endl;
+    * return -1;
+    * }
+    n = read(serverSocket,buffer,255);
+    * printf("Andver was %s \n",buffer);
+    * check = strncmp(buffer,"200",3);
+    * if(check){
+    * printf(\n server error with code %s:\n",buffer);
+    * return -1;
+    * }
 
-
-
+    */
 // get the real time
     if( clock_gettime( CLOCK_REALTIME, &startTime) == -1 )
     {
@@ -115,7 +133,11 @@ for(int i=0;i<maxLoop;i++){
     
     */
     
-    node_0.i2cRead((char*)&floatsToReceive,length); 
+    for (int j = 0; j < 6; j++){
+        rpi.i2cChangeSlave(i2c_slaves[j]);
+        rpi.i2cRead((char*)&floatsToReceive + 8*j, 8);
+        feedBackLengths[j] = (double)floatsToReceive[j*2];
+    }
 
     platform.getActuatorLengths(actuatorLength);
     for(int j=0;j<6;j++){
@@ -134,28 +156,39 @@ for(int i=0;i<maxLoop;i++){
 	angV[1] = 0;
 	angV[2] = 0;
 	
-	XYZ_V[0] = 100*sin(t*omg);
+	XYZ_V[0] = 0;
 	XYZ_V[1] = 0;
-	XYZ_V[2] = 0;
+	XYZ_V[2] = 100*sin(10*t*omg);
 
 	platform.calculateNewTopPlatePosition(angV, XYZ_V);
 	platform.calculateActuatorLength();
-	platform.calculateActuatorAcceleration(feedBackLengths);
+	platform.calculateActuatorAcceleration();
     platform.calculateStepperAcceleration();
     platform.calculateC0fromStepperAccel();
     platform.getC0(c0);
-	
+    
+	cout << "Feet length = " ; 
+    for(int k = 0; k<12; k++){
+        cout << (long)floatsToReceive[k] << ", ";
+    
+    }
+    cout << endl;
     for(int j=0; j<6;j++){
         floatsToSend[j] = (float)c0[j];
     }
     floatsToSend[6] = (float) t;
     
-    node_0.i2cWrite((char*)&floatsToSend,4);
+    for (int i = 0; i < 6; i++){
+        rpi.i2cChangeSlave(i2c_slaves[i]);
+        rpi.i2cWrite((char*)&floatsToSend + 4*i, 4);
+    }
     
 /* Rewrite to I2C comunication
     if(sendAccToTwin(serverSocket,floatsToSend)){
 		std::cout << "Error in sendAccToTwin in platformControll" << std::endl;
 		return 1;	
+        * 
+        * 
 	}
 */
     do{
